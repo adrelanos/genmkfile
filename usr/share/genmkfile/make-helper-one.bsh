@@ -252,6 +252,25 @@ make_get_dependencies() {
   make_deb_runtime_dependencies="$(make_dependencies_filter_helper <<<"$raw_runtime_depends")"
 }
 
+## Returns 0 (true) if a debian/control 'Architecture:' field value covers the
+## given target Debian architecture, i.e. dpkg-buildpackage building for that
+## target produces a binary package for this stanza. Handles 'any', the
+## 'linux-any' / 'linux-<arch>' wildcards (e.g. dkms packages), and explicit
+## space-separated architecture lists. The architecture-independent value
+## 'all' is handled separately by the caller.
+make_architecture_covers_target() {
+  local architecture_field="$1" target="$2" architecture_token
+  ## $architecture_field is a space-separated list that must word-split.
+  # shellcheck disable=SC2086
+  for architecture_token in $architecture_field; do
+    case "$architecture_token" in
+    any | linux-any) return 0 ;;
+    "$target" | "linux-$target") return 0 ;;
+    esac
+  done
+  return 1
+}
+
 make_get_variables() {
   ## Initialize the array if the caller did not set it (nounset-safe).
   [ -n "${make_folder_list_for_un_and_install+x}" ] || make_folder_list_for_un_and_install=()
@@ -423,16 +442,29 @@ make_get_variables() {
       true "make_pkg_version: $make_pkg_version"
       true "make_pkg_revision: $make_pkg_revision"
       true "binary_package_architecture: $binary_package_architecture"
-      ## Some packages, like tirdad-dkms, have an architecture of
-      ## 'linux-amd64' or similar, but the resulting deb file name
-      ## only includes 'amd64'.
-      if [[ "$binary_package_architecture" =~ ^linux-(.*) ]]; then
-        package_name_architecture="${BASH_REMATCH[1]}"
-      else
-        package_name_architecture="$binary_package_architecture"
-      fi
-      if [ "$package_name_architecture" = "any" ]; then
+      ## Determine the .deb architecture suffix and whether
+      ## dpkg-buildpackage actually produces this binary for the current
+      ## build (target) architecture.
+      ##
+      ## - 'Architecture: all' packages are architecture-independent and are
+      ##   always built; the .deb keeps the 'all' suffix.
+      ## - Architecture-dependent packages ('any', a 'linux-<arch>' wildcard
+      ##   as used by e.g. tirdad-dkms, or an explicit architecture list) are
+      ##   only built when the target architecture is covered, and the
+      ##   resulting .deb is named after the target architecture.
+      ## - Packages whose 'Architecture:' restriction excludes the target are
+      ##   skipped, because dpkg-buildpackage emits no .deb for them and they
+      ##   must not be listed as expected build artifacts. Example: an
+      ##   'Architecture: amd64' microcode metapackage during an arm64 build.
+      if [ "$binary_package_architecture" = "all" ]; then
+        package_name_architecture="all"
+      elif make_architecture_covers_target "$binary_package_architecture" "$target_architecture"; then
         package_name_architecture="$target_architecture"
+      else
+        true "INFO: skipping binary package '$package': Architecture '$binary_package_architecture' does not cover target architecture '$target_architecture'."
+        package=""
+        binary_package_architecture=""
+        continue
       fi
       ## Example architecture independent "all" package:
       ## anon-apt-sources-list_3.4-1_all.deb
