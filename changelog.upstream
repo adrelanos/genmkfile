@@ -1,3 +1,34 @@
+commit 44fc8ec6a3e651c82d6bc5d0ddbdde3b501bbfc2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 12:44:30 2026 -0400
+
+    refactoring
+
+commit 095fe1db82d9abd6d69453ccee25b172c35a92e7
+Merge: 23a74fc 917cabb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 12:41:26 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/cross-arch-deb-artifact-skip'
+
+commit 917cabb0bc4fb65d1cf1b369431d92a815c7149d
+Author: claude (dev42 08e1f373-4824-43b0-b4d4-e48187e4d900) <noreply@anthropic.com>
+Date:   Fri Jul 3 12:28:06 2026 -0400
+
+    make_architecture_covers_target: expand case block to one branch per line
+
+    Whitespace-only reformat of the architecture-match case statement; no
+    behavior change.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_014Pag3UZHFWciJjKjnUwPWS
+
+commit 23a74fcae6b6dbedb151b6c844f184b23d34fdb9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 00:55:26 2026 +0000
+
+    bumped changelog version
+
 commit 251ab82be202ceb8e9039c7e4ba6ef6988804fe8
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Jul 2 20:48:53 2026 -0400
@@ -102,6 +133,66 @@ Author: Aaron Rainbolt <arraybolt3@gmail.com>
 Date:   Thu Jul 2 00:45:08 2026 -0400
 
     Misc small fixes
+
+commit 2d84780f900f48d14f383b4a78be9f6a6070f627
+Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+Date:   Wed Jul 1 04:08:52 2026 -0400
+
+    make_get_variables: keep arch-excluded binary in make_package_list
+
+    Follow-up to the arch-restricted .deb skip: the previous change used
+    'continue', which also dropped the excluded binary from make_package_list,
+    not just from make_package_debs_files_list. make_package_list is iterated by
+    reprepro remove/removesrc (make_reprepro_shared) and by deb-cleanup, so an
+    arch-excluded package (e.g. firmware-nonfreedom on arm64) would no longer be
+    cleaned up / removed there.
+
+    Skip only the expected-artifact append (make_package_debs_files_list) via a
+    skip_debs_artifact flag, and still add the package to make_package_list.
+    reprepro-add uses the .changes file (not make_package_list), so keeping it
+    there does not cause an add of a non-existent .deb; and reprepro
+    remove/removesrc of an absent package is a no-op (exit 0, verified), so
+    cleanup/removal stays safe.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+commit d07583e5ad92c922593887731603c63f03c7c6f4
+Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+Date:   Wed Jul 1 01:17:42 2026 -0400
+
+    make_get_variables: skip binary stanzas whose Architecture excludes target
+
+    When computing make_package_debs_files_list (the .deb artifacts each binary
+    stanza is expected to produce), an 'Architecture:' field that is neither
+    'all' nor covers the current build (target) architecture means
+    dpkg-buildpackage emits no .deb for that stanza -- so it must not be listed
+    as an expected artifact.
+
+    Previously the expected .deb filename was derived from the literal
+    'Architecture:' field, so e.g. 'Architecture: amd64' produced an expected
+    '<pkg>_<ver>_amd64.deb' even on an arm64 build. dpkg-buildpackage building
+    for arm64 does not build that stanza, so the existence check in
+    make_deb_pkg_build_shared died with "File '..._amd64.deb' does not exist."
+    This blocked arm64 (and any cross-arch) builds at kicksecure-meta-packages,
+    whose 'firmware-nonfreedom' binary is 'Architecture: amd64' (it pulls
+    amd64-microcode / intel-microcode).
+
+    Add make_architecture_covers_target() to test whether an 'Architecture:'
+    field value covers a target architecture (handles 'any', the 'linux-any' /
+    'linux-<arch>' wildcards, and explicit space-separated lists). Use it to:
+    - keep 'all' packages as-is (architecture independent, always built);
+    - for architecture-dependent packages that cover the target, name the .deb
+      after the target architecture (dpkg-buildpackage always does so);
+    - skip packages whose Architecture excludes the target entirely.
+
+    No change for a native build where target == the stanza's architecture
+    (e.g. amd64): the computed suffix is identical, so existing amd64 builds are
+    unaffected. Validated by a real arm64 kicksecure-cli build clearing the
+    kicksecure-meta-packages step that previously failed here.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
 
 commit 8102ca4c88d51d3d5911a56acda0185101ca9803
 Author: Patrick Schleizer <adrelanos@whonix.org>
