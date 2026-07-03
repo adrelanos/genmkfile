@@ -1,3 +1,83 @@
+commit 251ab82be202ceb8e9039c7e4ba6ef6988804fe8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 2 20:48:53 2026 -0400
+
+    revert
+
+commit e4df953f2d4cbcea007b41bcccf3fa9284ac7808
+Merge: 5890afe 2235b4e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 2 20:47:48 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 2235b4e9f5ef90e38c3080addaa468ff88c9fe7d
+Merge: 5890afe dc70f2f
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu Jul 2 20:43:43 2026 -0400
+
+    Merge pull request #33 from org-ai-assisted/claude/cowbuilder-cache-dir-variable
+
+    make-helper-one: honor cowbuilder_cache_dir for the chroot location
+
+commit dc70f2f944af44f50295d98ffc149c654f9850fb
+Author: claude (derivative-maker3 ffb70f1b-ad5f-4fe1-9c66-bbc9e65a090f) <noreply@anthropic.com>
+Date:   Thu Jul 2 18:35:58 2026 -0400
+
+    make-helper-one: fail loud when --safe-links drops a source symlink
+
+    In install mode the per-fso loop runs 'stat -c "%a" -- "$file_with_destdir"'
+    unconditionally. rsync is invoked with '--safe-links', which skips symlinks
+    pointing outside the copied tree (absolute, or via '..'), so such a symlink is
+    silently NOT installed and (on a clean DESTDIR) has no counterpart. 'stat'
+    follows symlinks, so it then fails on the missing path and, because the
+    make-helper.bsh caller runs under 'set -o errexit', aborts the whole install
+    with a cryptic 'cannot statx'.
+
+    For a symlink source, decide from the link TARGETS, not from destination
+    existence/type: on a reinstall/upgrade DESTDIR may already hold a stale file OR
+    a stale symlink at the same path, either of which would mask the drop. rsync
+    copies a kept symlink verbatim, so the destination must be a symlink with the
+    identical target; anything else (absent, a non-symlink, or a differently-aimed
+    stale symlink) means rsync dropped it -> 'die' with a clear, actionable message.
+    A kept-but-dangling in-tree symlink (identical target, target absent) is skipped
+    rather than errored, since chmod-ing it is meaningless. A non-symlink source
+    whose destination is somehow missing still falls through to 'stat' and aborts
+    under errexit - also loud.
+
+    Verified against the dist-ai genmkfile-tests install_safe_links suite: normal
+    file+dir install; escaping symlink over a clean dest, a stale regular file, and
+    a stale symlink all fail loud; a safe in-tree symlink installs; a dangling
+    in-tree symlink is tolerated.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_013KGErLCzVcqd2kYV2DJT5E
+
+commit b0c1f6b482615a174d9f4f11e65c8549e8a8db31
+Author: claude (derivative-maker3 ffb70f1b-ad5f-4fe1-9c66-bbc9e65a090f) <noreply@anthropic.com>
+Date:   Thu Jul 2 16:54:06 2026 -0400
+
+    make-helper-one: honor cowbuilder_cache_dir for the chroot location
+
+    Resolve the 'TODO: change that folder': the cowbuilder 'base.cow' / 'cow.cow'
+    parent folder is now taken from '$cowbuilder_cache_dir' when the caller (e.g.
+    derivative-maker) exports it, defaulting to '/var/cache/pbuilder' for standalone
+    use. This lets the multi-gigabyte chroots be relocated onto larger/persistent
+    storage without patching genmkfile.
+
+    Also add a '## style-ok: no-strict' waiver: this is a sourced-only function
+    library, so it must not set strict-mode (which would leak into the sourcing
+    shell).
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_013KGErLCzVcqd2kYV2DJT5E
+
+commit 5890afec21afb4d154b594d4b18e9e5a97bcdb99
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 2 12:17:17 2026 +0000
+
+    bumped changelog version
+
 commit 82ba7a8a1253ee16373229a44b41a11e57323b19
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Jul 2 08:02:39 2026 -0400
