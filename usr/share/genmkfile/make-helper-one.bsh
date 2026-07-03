@@ -3,6 +3,11 @@
 ## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
+## style-ok: no-strict
+## Sourced-only function library (make-helper.bsh sources it); it must not set
+## strict-mode, which would leak 'errexit'/'nounset'/'pipefail' into the
+## sourcing shell.
+
 #set -x
 
 ## Code duplication. Copied from
@@ -1138,9 +1143,12 @@ beforehand?"
       [ -n "${make_cowbuilder_mirror:-}" ] || make_cowbuilder_mirror="https://deb.debian.org/debian"
     fi
 
-    ## TODO: change that folder
-    cow_folder="/var/cache/pbuilder/cow.cow_${target_architecture}"
-    base_folder="/var/cache/pbuilder/base.cow_${target_architecture}"
+    ## Parent folder of the cowbuilder chroots. Honor '$cowbuilder_cache_dir'
+    ## if the caller (e.g. derivative-maker) exported it, otherwise default to
+    ## the cowbuilder standard location.
+    [ -v cowbuilder_cache_dir ] || cowbuilder_cache_dir="/var/cache/pbuilder"
+    cow_folder="$cowbuilder_cache_dir/cow.cow_${target_architecture}"
+    base_folder="$cowbuilder_cache_dir/base.cow_${target_architecture}"
 
     if [ -n "${dist_build_pbuilder_config_file:-}" ]; then
       make_cowbuilder_config_file_arg=(--configfile "$dist_build_pbuilder_config_file")
@@ -1629,6 +1637,35 @@ make_helper() {
           # > cp: cannot overwrite non-directory '/lib' with directory 'lib'
           rsync "${genmkfile_rsync_opts[@]}" -- "$source_directory" "$DESTDIR"
           rsync_done=true
+        fi
+        ## rsync (above) installed every source entry into DESTDIR EXCEPT
+        ## symlinks that 'rsync --safe-links' drops - those point outside the
+        ## copied tree (absolute, or via '..') and are silently NOT installed
+        ## (there are no --exclude filters, so safe-links is the only thing that
+        ## skips an entry). For a symlink source, decide from the link TARGETS,
+        ## not from destination existence/type: on a reinstall/upgrade DESTDIR
+        ## may already hold a stale file OR a stale symlink at this path, either
+        ## of which would mask a dropped symlink. rsync copies a KEPT symlink
+        ## verbatim, so the destination must be a symlink with the identical
+        ## target; anything else (absent, a non-symlink, or a differently-aimed
+        ## stale symlink) means rsync dropped this one -> fail loud, it is a
+        ## packaging bug. (A non-symlink source whose destination is somehow
+        ## missing falls through to 'stat' below and aborts under
+        ## 'set -o errexit' - also loud.)
+        if [ -L "$source_fso" ]; then
+          local source_fso_link_target destination_link_target
+          source_fso_link_target="$(readlink -- "$source_fso")"
+          destination_link_target="$(readlink -- "$file_with_destdir" 2>/dev/null || true)"
+          if [ "$source_fso_link_target" != "$destination_link_target" ]; then
+            die 1 "refusing to install: symlink '$source_fso' -> '$source_fso_link_target' was not installed at '$file_with_destdir'. A symlink pointing outside the copied tree (absolute, or via '..') is skipped by 'rsync --safe-links' - make it a relative in-tree symlink."
+          fi
+          ## Destination is the copied symlink (identical target). If its in-tree
+          ## target is absent (a dangling symlink) it cannot be chmod'ed
+          ## meaningfully - chmod follows to the missing target - so skip it
+          ## rather than let 'stat' below abort.
+          if [ ! -e "$file_with_destdir" ]; then
+            continue
+          fi
         fi
         ## Need to check first if it is a file...
         ## ...before checking if it is an executable.
