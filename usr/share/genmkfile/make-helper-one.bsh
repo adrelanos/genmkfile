@@ -264,8 +264,12 @@ make_architecture_covers_target() {
   # shellcheck disable=SC2086
   for architecture_token in $architecture_field; do
     case "$architecture_token" in
-    any | linux-any) return 0 ;;
-    "$target" | "linux-$target") return 0 ;;
+    any | linux-any)
+      return 0
+      ;;
+    "$target" | "linux-$target")
+      return 0
+      ;;
     esac
   done
   return 1
