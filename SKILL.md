@@ -51,7 +51,7 @@ config auto-generated to `~/derivative-binary/pbuilder.conf`. dm's `2100` step o
 iterates dm's own package set + does `reprepro-add`. The raw knobs below are for
 understanding / building a standalone package OUTSIDE a dm checkout.
 
-### Building standalone packages WITH dm's cowbuilder env (verified recipe)
+### Building standalone packages WITH dm's cowbuilder env
 
 For packages that aren't in dm's package set (so dm's `2100` won't iterate them)
 but should still build with dm's machinery, reuse dm's base + config instead of
@@ -160,16 +160,12 @@ Non-executable override files are skipped. Prefer this over editing the engine.
 *caller's* environment, as far as sudo lets it through. derivative-maker's
 `$SUDO_TO_ROOT` already appends `--preserve-env=$env_vars_keep_list`
 (`help-steps/variables`), and `cowbuilder` forwards that environment into the
-`--execute` script (verified: a `--preserve-env`'d, exported variable is visible
-inside the chroot).
+`--execute` script.
 
 - `--preserve-env=<list>` only carries **exported** variables. A set-but-unexported
   shell variable named in the list is silently dropped. So to hand a chroot script
   its inputs, `export` them and rely on `--preserve-env` -- there is no need to
   serialize them to a file and `source` it (which would be runtime-generated code).
-  Several `env_vars_keep_list` entries are set but not exported, which is exactly
-  why the old vbox chroot scripts ferried them through a generated `declare -p`
-  env-file; exporting them is the fix.
 
 ### cowdancer COW + the hardlink-bypass trap
 
