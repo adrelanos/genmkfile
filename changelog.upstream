@@ -1,3 +1,41 @@
+commit 55b17b2c5bc754496959e99c68aaef19d1a0c1e8
+Merge: 8a5690d ad09534
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 06:30:15 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit ad09534439d2515f1f3e6039d1c9db6e6aeef5e7
+Author: claude (dev55 b68ecc42-23bb-49b9-9b0d-9a17de92bf3a) <noreply@anthropic.com>
+Date:   Sun Jul 5 13:47:34 2026 -0400
+
+    SKILL.md: bullet-point terse rewrite
+
+    Prose paragraphs -> bullets, tightened wording. All build commands, genmkfile
+    targets, env-var knobs, code blocks, override filenames, and gotchas preserved
+    verbatim; frontmatter untouched. Format-only change.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 35bdbaa32e343ec92a89b6ed046dabb0b1683342
+Author: claude (dev42 08e1f373-4824-43b0-b4d4-e48187e4d900) <noreply@anthropic.com>
+Date:   Fri Jul 3 15:30:56 2026 -0400
+
+    add AGENTS.md linking to the comprehensive test suite in dist-ai
+
+    The target-dispatch regression tests are too high-volume for human review and live in the
+    AI-maintained dist-ai repo. AGENTS.md is a minimal pointer to that suite
+    plus its invocation; CLAUDE.md defers to it (sibling-package convention).
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_014Pag3UZHFWciJjKjnUwPWS
+
+commit 8a5690db30ebb9ecaad47424493ff198ddab50bb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 17:28:04 2026 +0000
+
+    bumped changelog version
+
 commit 44fc8ec6a3e651c82d6bc5d0ddbdde3b501bbfc2
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Jul 3 12:44:30 2026 -0400
