@@ -1,3 +1,39 @@
+commit 23e7e08f87a97dd119f5a6c4202df99b12746d8a
+Merge: 34733b9 b561e96
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 8 14:02:12 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit b561e96b2a50ee3b4ae4a1bfc13963989f211989
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 09:58:26 2026 -0400
+
+    CI: add dist-ai-tests apt deps (.github/dm-consumer.yml)
+
+    Declare the apt packages this package's dist-ai suites need at CI runtime,
+    read by reusable-dist-ai-tests from .github/dm-consumer.yml.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 569c0866a419aa43793c40d3544641bdc779e8e7
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 08:46:01 2026 -0400
+
+    CI: add dist-ai tests workflow (consumer wrapper)
+
+    Install the byte-identical consumer-dist-ai-tests.yml wrapper so this
+    package's dist-ai suites run on each PR and master push via the reusable in
+    developer-meta-files. Rollout of the dist-ai CI wiring.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 34733b9e3eb835345fd072835c658f3d5d232d81
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 10:34:23 2026 +0000
+
+    bumped changelog version
+
 commit 55b17b2c5bc754496959e99c68aaef19d1a0c1e8
 Merge: 8a5690d ad09534
 Author: Patrick Schleizer <adrelanos@whonix.org>
