@@ -1270,10 +1270,19 @@ beforehand?"
     ## $COWBUILDER_PREFIX is intentionally unquoted: callers set it
     ## to something like 'env http_proxy=... env foo=bar' that needs
     ## to split into multiple argv slots.
+    ##
+    ## $UNSHARE_PID_NS (also intentionally unquoted) runs cowbuilder as the
+    ## init of a private PID namespace so nothing started inside the chroot
+    ## session can outlive the build. It is set and exported by
+    ## derivative-maker 'help-steps/pre' (the single source of truth,
+    ## typically 'unshare --pid --fork --kill-child --'); when genmkfile
+    ## runs standalone it is unset and this expands to nothing, keeping
+    ## unprivileged standalone builds working.
     # shellcheck disable=SC2086
     make_log_and_run \
       sudo \
       ${COWBUILDER_PREFIX:-} \
+      ${UNSHARE_PID_NS:-} \
       cowbuilder \
       --debbuildopts="-sa" \
       --architecture "$target_architecture" \
