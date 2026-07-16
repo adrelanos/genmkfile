@@ -1194,7 +1194,11 @@ beforehand?"
     ## if the caller (e.g. derivative-maker) exported it, otherwise default to
     ## the cowbuilder standard location.
     [ -v cowbuilder_cache_dir ] || cowbuilder_cache_dir="/var/cache/pbuilder"
-    cow_folder="$cowbuilder_cache_dir/cow.cow_${target_architecture}"
+    ## '$make_cow_suffix' lets a caller give each concurrent 'deb-pkg' its own writable cow
+    ## snapshot (e.g. '.0', '.1') so parallel package builds do not collide on one
+    ## 'cow.cow_<arch>'. Empty by default -> unchanged single-build behavior. The read-only
+    ## 'base.cow_<arch>' is shared safely (cowbuilder only reads it to seed each snapshot).
+    cow_folder="$cowbuilder_cache_dir/cow.cow_${target_architecture}${make_cow_suffix:-}"
     base_folder="$cowbuilder_cache_dir/base.cow_${target_architecture}"
 
     if [ -n "${dist_build_pbuilder_config_file:-}" ]; then
