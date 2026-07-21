@@ -1,3 +1,82 @@
+commit 672d47c92dc2262045bc9fda6b2aba007b12f677
+Merge: 5432d82 b644393
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 21 06:07:07 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit b6443936b413e8e3270c826d9c2b6c49e898c4d9
+Merge: 2a4a151 6d42747
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu Jul 16 08:07:50 2026 -0400
+
+    Merge pull request #37 from org-ai-assisted/genmkfile-parallel-cow-suffix
+
+    deb-pkg: per-build cow snapshot suffix (make_cow_suffix) for parallel builds
+
+commit 6d42747e185c78e146908b2aa40eeb1f1f61c882
+Author: assisted-by-ai <assisted-by-ai@users.noreply.github.com>
+Date:   Thu Jul 16 07:07:20 2026 -0400
+
+    deb-pkg: allow a per-build cow snapshot suffix (make_cow_suffix)
+
+    Append an optional '$make_cow_suffix' to the writable cowbuilder snapshot path
+    (cow.cow_<arch><suffix>) so a caller can run several 'deb-pkg' builds concurrently,
+    each with its own snapshot, without colliding on one 'cow.cow_<arch>'. Empty by
+    default -> unchanged single-build behavior. The read-only 'base.cow_<arch>' stays
+    shared (cowbuilder only reads it to seed each snapshot). Enables package-level
+    parallelism in derivative-maker's 2100_create-debian-packages.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 2a4a1512ec0c40889c172514ad81d1200a0bf811
+Merge: edede29 f1d0d57
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon Jul 13 13:32:13 2026 -0400
+
+    Merge pull request #36 from org-ai-assisted/pid-ns-cowbuilder
+
+    make-helper-one: run cowbuilder builds under UNSHARE_PID_NS when set
+
+commit edede29aa6bde098ba9c35bf4c6bad581001fc81
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon Jul 13 11:48:33 2026 -0400
+
+    make-helper-one: multi-line case arm (R-070) + no-has waiver (#35)
+
+    Expand the compact case arm to the fully multi-line form per the updated
+    R-070 (org-ai-assisted/developer-meta-files#144). Touching the file
+    surfaced R-090 on two 'command -v' uses that RESOLVE a command path (has
+    returns only a boolean), so added a '## style-ok: no-has' waiver. No
+    behavior change; bash -n, shellcheck, and the gate pass.
+
+    Co-authored-by: claude (dev71 31548627-e7c1-43cd-bd41-8b0900c72576) <noreply@anthropic.com>
+
+commit f1d0d57387c8c0499c99b8d3471c919f79709434
+Author: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+Date:   Mon Jul 13 10:39:25 2026 -0400
+
+    make-helper-one: run cowbuilder builds under UNSHARE_PID_NS when set
+
+    Run the cowbuilder .deb build as the init of a private PID namespace so
+    nothing started inside the chroot session can outlive the build; when
+    cowbuilder exits, the kernel SIGKILLs every process left in the
+    namespace (upstream pbuilder deliberately has no process reaper).
+
+    The wrapper is the UNSHARE_PID_NS variable set and exported by
+    derivative-maker help-steps/pre (the single source of truth, typically
+    'unshare --pid --fork --kill-child --'). When genmkfile runs standalone
+    the variable is unset and '${UNSHARE_PID_NS:-}' expands to nothing, so
+    unprivileged standalone builds keep working unchanged.
+
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+commit 5432d82f02ca0968d7a9c217b5f4e83d4db6aac8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 8 18:10:02 2026 +0000
+
+    bumped changelog version
+
 commit 23e7e08f87a97dd119f5a6c4202df99b12746d8a
 Merge: 34733b9 b561e96
 Author: Patrick Schleizer <adrelanos@whonix.org>
