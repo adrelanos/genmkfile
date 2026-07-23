@@ -1,3 +1,156 @@
+commit 672d47c92dc2262045bc9fda6b2aba007b12f677
+Merge: 5432d82 b644393
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 21 06:07:07 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit b6443936b413e8e3270c826d9c2b6c49e898c4d9
+Merge: 2a4a151 6d42747
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu Jul 16 08:07:50 2026 -0400
+
+    Merge pull request #37 from org-ai-assisted/genmkfile-parallel-cow-suffix
+
+    deb-pkg: per-build cow snapshot suffix (make_cow_suffix) for parallel builds
+
+commit 6d42747e185c78e146908b2aa40eeb1f1f61c882
+Author: assisted-by-ai <assisted-by-ai@users.noreply.github.com>
+Date:   Thu Jul 16 07:07:20 2026 -0400
+
+    deb-pkg: allow a per-build cow snapshot suffix (make_cow_suffix)
+
+    Append an optional '$make_cow_suffix' to the writable cowbuilder snapshot path
+    (cow.cow_<arch><suffix>) so a caller can run several 'deb-pkg' builds concurrently,
+    each with its own snapshot, without colliding on one 'cow.cow_<arch>'. Empty by
+    default -> unchanged single-build behavior. The read-only 'base.cow_<arch>' stays
+    shared (cowbuilder only reads it to seed each snapshot). Enables package-level
+    parallelism in derivative-maker's 2100_create-debian-packages.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 2a4a1512ec0c40889c172514ad81d1200a0bf811
+Merge: edede29 f1d0d57
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon Jul 13 13:32:13 2026 -0400
+
+    Merge pull request #36 from org-ai-assisted/pid-ns-cowbuilder
+
+    make-helper-one: run cowbuilder builds under UNSHARE_PID_NS when set
+
+commit edede29aa6bde098ba9c35bf4c6bad581001fc81
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon Jul 13 11:48:33 2026 -0400
+
+    make-helper-one: multi-line case arm (R-070) + no-has waiver (#35)
+
+    Expand the compact case arm to the fully multi-line form per the updated
+    R-070 (org-ai-assisted/developer-meta-files#144). Touching the file
+    surfaced R-090 on two 'command -v' uses that RESOLVE a command path (has
+    returns only a boolean), so added a '## style-ok: no-has' waiver. No
+    behavior change; bash -n, shellcheck, and the gate pass.
+
+    Co-authored-by: claude (dev71 31548627-e7c1-43cd-bd41-8b0900c72576) <noreply@anthropic.com>
+
+commit f1d0d57387c8c0499c99b8d3471c919f79709434
+Author: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+Date:   Mon Jul 13 10:39:25 2026 -0400
+
+    make-helper-one: run cowbuilder builds under UNSHARE_PID_NS when set
+
+    Run the cowbuilder .deb build as the init of a private PID namespace so
+    nothing started inside the chroot session can outlive the build; when
+    cowbuilder exits, the kernel SIGKILLs every process left in the
+    namespace (upstream pbuilder deliberately has no process reaper).
+
+    The wrapper is the UNSHARE_PID_NS variable set and exported by
+    derivative-maker help-steps/pre (the single source of truth, typically
+    'unshare --pid --fork --kill-child --'). When genmkfile runs standalone
+    the variable is unset and '${UNSHARE_PID_NS:-}' expands to nothing, so
+    unprivileged standalone builds keep working unchanged.
+
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+commit 5432d82f02ca0968d7a9c217b5f4e83d4db6aac8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 8 18:10:02 2026 +0000
+
+    bumped changelog version
+
+commit 23e7e08f87a97dd119f5a6c4202df99b12746d8a
+Merge: 34733b9 b561e96
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 8 14:02:12 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit b561e96b2a50ee3b4ae4a1bfc13963989f211989
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 09:58:26 2026 -0400
+
+    CI: add dist-ai-tests apt deps (.github/dm-consumer.yml)
+
+    Declare the apt packages this package's dist-ai suites need at CI runtime,
+    read by reusable-dist-ai-tests from .github/dm-consumer.yml.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 569c0866a419aa43793c40d3544641bdc779e8e7
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 08:46:01 2026 -0400
+
+    CI: add dist-ai tests workflow (consumer wrapper)
+
+    Install the byte-identical consumer-dist-ai-tests.yml wrapper so this
+    package's dist-ai suites run on each PR and master push via the reusable in
+    developer-meta-files. Rollout of the dist-ai CI wiring.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 34733b9e3eb835345fd072835c658f3d5d232d81
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 10:34:23 2026 +0000
+
+    bumped changelog version
+
+commit 55b17b2c5bc754496959e99c68aaef19d1a0c1e8
+Merge: 8a5690d ad09534
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 06:30:15 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit ad09534439d2515f1f3e6039d1c9db6e6aeef5e7
+Author: claude (dev55 b68ecc42-23bb-49b9-9b0d-9a17de92bf3a) <noreply@anthropic.com>
+Date:   Sun Jul 5 13:47:34 2026 -0400
+
+    SKILL.md: bullet-point terse rewrite
+
+    Prose paragraphs -> bullets, tightened wording. All build commands, genmkfile
+    targets, env-var knobs, code blocks, override filenames, and gotchas preserved
+    verbatim; frontmatter untouched. Format-only change.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 35bdbaa32e343ec92a89b6ed046dabb0b1683342
+Author: claude (dev42 08e1f373-4824-43b0-b4d4-e48187e4d900) <noreply@anthropic.com>
+Date:   Fri Jul 3 15:30:56 2026 -0400
+
+    add AGENTS.md linking to the comprehensive test suite in dist-ai
+
+    The target-dispatch regression tests are too high-volume for human review and live in the
+    AI-maintained dist-ai repo. AGENTS.md is a minimal pointer to that suite
+    plus its invocation; CLAUDE.md defers to it (sibling-package convention).
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_014Pag3UZHFWciJjKjnUwPWS
+
+commit 8a5690db30ebb9ecaad47424493ff198ddab50bb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 17:28:04 2026 +0000
+
+    bumped changelog version
+
 commit 44fc8ec6a3e651c82d6bc5d0ddbdde3b501bbfc2
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Jul 3 12:44:30 2026 -0400

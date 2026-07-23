@@ -1,0 +1,12 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Per-repo parameters for developer-meta-files consumer workflows, read at
+## workflow runtime. Here: apt packages + the helper-scripts runtime the
+## genmkfile dist-ai suite needs (make-helper sources helper-scripts and shells
+## out to dpkg-dev / debhelper build tooling).
+dist-ai-tests:
+  apt-packages: "python3 safe-rm dpkg-dev debhelper"
+  helper-scripts: true
