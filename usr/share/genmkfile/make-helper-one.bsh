@@ -2315,8 +2315,14 @@ make_reprepro_shared() {
     if [ "$make_reprepro_cmd" = "add" ]; then
       changes_file_absolute_path="$(readlink -f -- "$make_main_changes_file")"
       test -f "$changes_file_absolute_path"
+      ## An Architecture:all package ships a build-host buildinfo named
+      ## '<pkg>_<build-arch>.buildinfo' (e.g. amd64), whose architecture is not in
+      ## the .changes 'Architecture: all source' header. A distribution configured
+      ## with 'Tracking: includebuildinfos' then rejects the include as
+      ## 'surprisingarch'. Accept it (the standard handling for arch-all build
+      ## metadata) so tracking-enabled repositories accept arch-all packages.
       # shellcheck disable=SC2086
-      make_log_and_run $make_reprepro_wrapper --ignore=wrongdistribution include "$make_reprepro_codename_item" "$changes_file_absolute_path"
+      make_log_and_run $make_reprepro_wrapper --ignore=wrongdistribution --ignore=surprisingarch include "$make_reprepro_codename_item" "$changes_file_absolute_path"
     else
       for package in "${make_package_list[@]}"; do
         # shellcheck disable=SC2086
