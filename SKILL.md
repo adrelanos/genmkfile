@@ -68,7 +68,9 @@ genmkfile dist && genmkfile debdist && genmkfile debdsc && genmkfile deb-pkg
 Gotchas learned:
 - dm's `1300` fails standalone WITHOUT `1200` first (debootstrap).
 - The TMPDIR break is fixed by dm's base (in-chroot `mkdir $TMPDIR`), NOT by passing the config alone -- a config-only build still fails `dpkg-deb: failed to make temporary file`.
-- If a package's source tree has an empty dir, `genmkfile dist` errors "Empty directory found!"; fix with an executable `./make-helper-overrides.bsh` defining `make_dist_hook_pre` to drop a placeholder -- don't move the package off genmkfile.
+- `genmkfile dist` errors "Empty directory found!" for TWO different reasons -- check which:
+  - A genuinely empty dir in the source tree: fix with an executable `./make-helper-overrides.bsh` defining `make_dist_hook_pre` to drop a placeholder -- don't move the package off genmkfile.
+  - Build residue from a previous in-place `debuild`: `debian/.debhelper/generated/_source/home` is left behind empty. `genmkfile distclean` does NOT remove it; `fakeroot debian/rules clean` (dh_clean) does.
 - A small wrapper that loops over the package dirs keeps a multi-package build DRY.
 
 ### Raw genmkfile cowbuilder knobs (standalone, outside dm)
@@ -89,7 +91,8 @@ genmkfile deb-pkg
 - `make_cowbuilder_distribution` -- defaults to `$dist_build_apt_stable_release` or `lsb_release -sc` (e.g. `trixie`).
 - `make_cowbuilder_mirror` -- apt mirror for the chroot; derivative-maker sets it to its apt-cacher (`http://127.0.0.1:9977/debian`); falls back to `https://deb.debian.org/debian`. (In dm, `buildconfig.d` exports it.)
 - `dist_build_pbuilder_config_file` -- `--configfile` for cowbuilder/pbuilder.
-- `make_use_lintian=true|false`, `make_use_debsign=true` + `make_debsign_opts` (debsign with `sq verify` against `$DEBEMAIL`).
+- `make_use_lintian=true|false` -- **fails closed on a WARNING, not just an error.** Any lintian output at all (the default opts add `--pedantic --info --display-info`) reaches `make_lintian_on_warning`, which exits non-zero unless `make_lintian_fail_open_versus_closed=open`. It runs AFTER the `.deb` is already built, so the package exists in the dist folder even though `deb-pkg` "failed" -- check for the artifact before rebuilding. Unset means autodetect: lintian runs if installed. Use `make_use_lintian=false` for a build you just want the `.deb` from.
+- `make_use_debsign=true` + `make_debsign_opts` (debsign with `sq verify` against `$DEBEMAIL`).
 - genmkfile passes to cowbuilder: `--build <dsc> --basepath /var/cache/pbuilder/base.cow_<arch> --buildplace /var/cache/pbuilder/cow.cow_<arch> --buildresult <dist_folder> --debbuildopts=-sa`. **It does NOT create the base** -- create it once first.
 
 ### Create the cowbuilder base (once per arch)
