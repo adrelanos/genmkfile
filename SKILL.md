@@ -45,7 +45,7 @@ make_cross_build_platform_list=amd64 \
 - dm's `2100` step only iterates dm's own package set + does `reprepro-add`.
 - Raw knobs below are for understanding / building a standalone package OUTSIDE a dm checkout.
 
-### Building standalone packages WITH dm's cowbuilder env (verified recipe)
+### Building standalone packages WITH dm's cowbuilder env
 
 - For packages NOT in dm's package set (so dm's `2100` won't iterate them) but that should still build with dm's machinery: reuse dm's base + config instead of hand-rolling.
 - Run dm's setup ONCE, then build each package via genmkfile pointed at the dm pbuilder config:
@@ -137,10 +137,9 @@ sudo cowbuilder --create \
 ### cowbuilder `--execute`: passing variables into a chroot script
 
 - `cowbuilder --execute -- <script>` runs `<script>` inside the chroot with the *caller's* environment, as far as sudo lets it through.
-- derivative-maker's `$SUDO_TO_ROOT` already appends `--preserve-env=$env_vars_keep_list` (`help-steps/variables`), and `cowbuilder` forwards that environment into the `--execute` script (verified: a `--preserve-env`'d, exported variable is visible inside the chroot).
+- derivative-maker's `$SUDO_TO_ROOT` already appends `--preserve-env=$env_vars_keep_list` (`help-steps/variables`), and `cowbuilder` forwards that environment into the `--execute` script.
 - `--preserve-env=<list>` only carries **exported** variables. A set-but-unexported shell variable named in the list is silently dropped.
 - So to hand a chroot script its inputs, `export` them and rely on `--preserve-env` -- no need to serialize them to a file and `source` it (which would be runtime-generated code).
-- Several `env_vars_keep_list` entries are set but not exported, which is exactly why the old vbox chroot scripts ferried them through a generated `declare -p` env-file; exporting them is the fix.
 
 ### cowdancer COW + the hardlink-bypass trap
 
