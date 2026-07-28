@@ -45,8 +45,8 @@ Reference for the behaviour of `genmkfile deb-pkg` when `make_use_cowbuilder` is
 - It writes debhelper residue into the source tree (`debian/.debhelper`,
   `debian/*.substvars`, `debian/files`, `debian/debhelper-build-stamp`, and a
   `debian/<package-name>` staging dir). `genmkfile dist` then rejects the tree with
-  "Empty directory found!"; `fakeroot debian/rules clean` (dh_clean) clears it,
-  `genmkfile distclean` does not.
+  "Empty directory found!". `genmkfile deb-cleanup` clears it; `genmkfile distclean`
+  does not (it only runs the Makefile's `clean`).
 - cowbuilder does not hit the residue problem -- it builds from the source tarball
   inside the chroot.
 - A lintian WARNING is fatal by default and fires after the `.deb` already exists; see
@@ -95,7 +95,7 @@ Gotchas learned:
 - The TMPDIR break is fixed by dm's base (in-chroot `mkdir $TMPDIR`), NOT by passing the config alone -- a config-only build still fails `dpkg-deb: failed to make temporary file`.
 - `genmkfile dist` errors "Empty directory found!" for TWO different reasons -- check which:
   - A genuinely empty dir in the source tree: fix with an executable `./make-helper-overrides.bsh` defining `make_dist_hook_pre` to drop a placeholder -- don't move the package off genmkfile.
-  - Build residue from a previous in-place `debuild`: `debian/.debhelper/generated/_source/home` is left behind empty. `genmkfile distclean` does NOT remove it; `fakeroot debian/rules clean` (dh_clean) does.
+  - Build residue from a previous in-place `debuild`: `debian/.debhelper/generated/_source/home` is left behind empty. Clear it with `genmkfile deb-cleanup` (runs `debian/rules clean` plus the debhelper-file removal). `genmkfile distclean` does NOT remove it -- it only runs the Makefile's `clean` target. Note `deb-pkg` already runs `deb-cleanup` first, so this usually self-corrects on the next build.
 - A small wrapper that loops over the package dirs keeps a multi-package build DRY.
 
 ### Raw genmkfile cowbuilder knobs (standalone, outside dm)
@@ -145,6 +145,7 @@ sudo cowbuilder --create \
 - `deb-install` (build-deps via dpkg).
 - `deb-icup` (install just-built current package).
 - `deb-remove` / `deb-purge`.
+- `deb-clean` (delete temporary debhelper files) / `deb-cleanup` (same, plus debuild artifacts in the parent folder). `deb-cleanup` is the one that clears the residue an in-place build leaves; `distclean` does not.
 - `lintian`.
 - `deb-chl-bumpup-*` (changelog bump).
 - `git-tag-sign/-verify`.
