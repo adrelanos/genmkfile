@@ -1,3 +1,101 @@
+commit 42176da71241a7574bb96497d41c6a2009a98a9c
+Merge: a1cd19b 376a6bb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 28 07:55:48 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 376a6bbc7b43a3c48270df6c12f02ee62298599e
+Author: claude <noreply@anthropic.com>
+Date:   Tue Jul 28 06:17:11 2026 -0400
+
+    consumer-codex-review: drop OPENAI_API_KEY forward to the disabled reusable
+
+    Propagates org-ai-assisted/developer-meta-files#167. The reusable is a no-op
+    stub (job 'if: false') and no longer declares an OPENAI_API_KEY secret;
+    forwarding an undeclared secret is rejected by GitHub at workflow startup
+    (startup_failure). Dropping the forward lets the no-op run green; Codex review
+    stays cleanly disabled.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit a1cd19b9421b3ff21e5d96168d510a3812623472
+Merge: b79cab0 3edb3bb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 26 08:05:15 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 3edb3bb0e22dff9b163b85bed8011152bca58bc4
+Merge: 952c855 c8f8289
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu Jul 23 15:47:41 2026 -0400
+
+    Merge pull request #39 from org-ai-assisted/ai
+
+    reprepro include: accept arch-all build-host buildinfo (--ignore=surprisingarch)
+
+commit 952c855b2da3323087731230dc7a7a4ccc5d557f
+Merge: 675f30c 380912b
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu Jul 23 12:40:21 2026 -0400
+
+    Merge pull request #34 from org-ai-assisted/claude/skill-strip-history
+
+    genmkfile skill: strip dated history
+
+commit 380912bdaab613e086a419d302cc46faa1a2fba4
+Merge: a2dfda4 675f30c
+Author: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+Date:   Thu Jul 23 12:39:59 2026 -0400
+
+    Merge remote-tracking branch 'oaa/master' into skill-strip-merge
+
+    # Conflicts:
+    #       SKILL.md
+
+commit c8f82892fd4bf60d757b696f36a4903087e3196a
+Author: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+Date:   Thu Jul 23 11:00:37 2026 -0400
+
+    reprepro include: accept arch-all build-host buildinfo (--ignore=surprisingarch)
+
+    An Architecture:all package (e.g. developer-meta-files) ships a build-host
+    buildinfo named '<pkg>_<build-arch>.buildinfo' (amd64), whose architecture is
+    not listed in the .changes 'Architecture: all source' header. A distribution
+    configured with 'Tracking: minimal includebuildinfos ...' makes reprepro process
+    that buildinfo and reject the include as 'surprisingarch', aborting the upload:
+
+      '..._amd64.buildinfo' looks like architecture 'amd64', but this is not listed
+      in the Architecture-Header!  To ignore use --ignore=surprisingarch.
+
+    The aptrepo_local distribution has no Tracking line, so it never includes the
+    buildinfo and succeeds; only tracking-enabled (aptrepo_remote) distributions hit
+    this. Pass --ignore=surprisingarch alongside the existing --ignore=wrongdistribution
+    on the include; this is the standard handling for arch-all build metadata and does
+    not affect arch-specific packages.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit b79cab097fd397a125977232a69d1463a9e81ca1
+Merge: 2c7b22e 675f30c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 23 08:16:15 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 675f30cd77b9870d62f1ee8b12bf3c001f05b09a
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Wed Jul 22 10:21:16 2026 -0400
+
+    consumer-claude-code: forward CLAUDE_CODE_OAUTH_TOKEN (claude review OAuth port)
+
+commit 2c7b22e3771ca7e0cb6c3c9cc6680e2e396deca4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 21 10:34:54 2026 +0000
+
+    bumped changelog version
+
 commit 672d47c92dc2262045bc9fda6b2aba007b12f677
 Merge: 5432d82 b644393
 Author: Patrick Schleizer <adrelanos@whonix.org>
@@ -131,6 +229,16 @@ Date:   Sun Jul 5 13:47:34 2026 -0400
     verbatim; frontmatter untouched. Format-only change.
 
     Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit a2dfda4ce737d5a8a2c329a12e8f3395ba372536
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat Jul 4 19:57:17 2026 -0400
+
+    SKILL.md: strip dated history, present-tense only
+
+    Remove the '(verified recipe)' / '(verified: ...)' attestations and a vbox
+    war-story sentence whose reusable lesson is already stated. No instruction
+    or command changed.
 
 commit 35bdbaa32e343ec92a89b6ed046dabb0b1683342
 Author: claude (dev42 08e1f373-4824-43b0-b4d4-e48187e4d900) <noreply@anthropic.com>
