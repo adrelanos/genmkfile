@@ -52,8 +52,10 @@ Reference for the behaviour of `genmkfile deb-pkg` when `make_use_cowbuilder` is
   does not (it only runs the Makefile's `clean`).
 - cowbuilder does not hit the residue problem -- it builds from the source tarball
   inside the chroot.
-- A lintian WARNING is fatal by default and fires after the `.deb` already exists; see
-  the `make_use_lintian` knob below.
+- ANY captured lintian output is fatal by default -- not just warnings. The handler is
+  gated on the output being non-empty, and the default opts add `--pedantic --info
+  --display-info`, so an informational note alone fails the build. It fires after the
+  `.deb` already exists; see the `make_use_lintian` knob below.
 
 ## cowbuilder mode (chroot build)
 
