@@ -10,21 +10,24 @@ license: MIT
 - Replaces hand-written `debian/*.install` and `make install` targets.
 - Files laid out as `usr/...`, `etc/...` in the package root install to `/usr/...`, `/etc/...`.
 - Engine: big bash script `/usr/share/genmkfile/make-helper-one.bsh`.
-- Thin `/usr/bin/genmkfile` wrapper locates `GENMKFILE_PATH` (`./packages/kicksecure/genmkfile/usr/share/genmkfile` in a dm checkout, else `/usr/share/genmkfile`).
+- Thin `/usr/bin/genmkfile` wrapper locates `GENMKFILE_PATH`, relative to the WRAPPER's own location (not your CWD): `./packages/kicksecure/genmkfile/usr/share/genmkfile` in a dm checkout, else `./usr/share/genmkfile`, else `/usr/share/genmkfile`.
 - Run it from a package's root (the dir containing `debian/`).
 
 ## Build sequence (cowbuilder)
 
-- `deb-pkg` with cowbuilder needs the source tarballs built FIRST, in order:
-
-```
-genmkfile dist       # -> upstream tarball  (excludes .git and ./debian)
-genmkfile debdist     # -> debian tarball
-genmkfile debdsc      # -> .dsc
-genmkfile deb-pkg     # -> builds the .deb(s)
-```
-
-- `genmkfile distclean` removes generated tarballs/build cruft.
+- `genmkfile deb-pkg` is the whole build. `make-helper.bsh` intercepts it and runs, in
+  order: `deb-cleanup`, `dist` (upstream tarball; excludes `.git` and `./debian`),
+  `debdist` (debian tarball), `debdsc` (`.dsc`), then `deb-pkg-build` once per entry in
+  `make_cross_build_platform_list`.
+- So do NOT run `dist`/`debdist`/`debdsc` yourself first: `deb-pkg` starts with
+  `deb-cleanup`, which DELETES those artifacts, then regenerates them. Running them by
+  hand is wasted work, not a prerequisite.
+- The "does not exist. Did you run genmkfile dist ..." errors come from
+  `deb-pkg-build`, which is the target to use when you deliberately want the build step
+  alone.
+- `genmkfile distclean` is currently the SAME as `clean`: it runs the Makefile's `clean`
+  target and nothing else. It does not remove tarballs, and it does not remove debhelper
+  residue -- that is `deb-clean` / `deb-cleanup`.
 - Plain `genmkfile deb-pkg` with no cowbuilder uses `debuild` in-place (needs build-deps installed; `sudo genmkfile deb-all-dep` installs them).
 
 ### Prefer cowbuilder
@@ -87,7 +90,7 @@ make_cross_build_platform_list=amd64 ./build-steps.d/1300_cowbuilder-setup --all
 export make_use_cowbuilder=true make_use_lintian=false
 export make_cowbuilder_dist_folder=<dist-folder>   # where built .debs land
 export dist_build_pbuilder_config_file=~/derivative-binary/pbuilder.conf
-genmkfile dist && genmkfile debdist && genmkfile debdsc && genmkfile deb-pkg
+genmkfile deb-pkg   # runs deb-cleanup, dist, debdist, debdsc, deb-pkg-build itself
 ```
 
 Gotchas learned:
@@ -142,10 +145,12 @@ sudo cowbuilder --create \
 
 - `install` / `uninstall` (to a live system or `DESTDIR`).
 - `installsim` / `uninstallcheck` (dry runs).
-- `deb-install` (build-deps via dpkg).
+- `deb-install` (install the ALREADY-BUILT .deb from the dist folder, then `installcheck`). Build-deps are `deb-build-dep` / `deb-all-dep`.
 - `deb-icup` (install just-built current package).
 - `deb-remove` / `deb-purge`.
-- `deb-clean` (delete temporary debhelper files) / `deb-cleanup` (same, plus debuild artifacts in the parent folder). `deb-cleanup` is the one that clears the residue an in-place build leaves; `distclean` does not.
+- `deb-clean` (delete temporary debhelper files) / `deb-cleanup` (runs the Makefile `clean` AND `debian/rules clean` AND `deb-clean`, then deletes that package's artifacts from `$DISTDIR`). `deb-cleanup` is what clears the residue an in-place build leaves; `distclean` does not.
+  - CAUTION: those deletions are `${DISTDIR}/<package>_*`, and under cowbuilder `$DISTDIR` IS `make_cowbuilder_dist_folder` -- the .deb cache. Since `deb-pkg` runs `deb-cleanup` first, every `deb-pkg` wipes that package's cached `.deb`/`.dsc`/`.changes`/`.buildinfo` before rebuilding, so a FAILED build leaves no cached artifact for it.
+  - `deb-cleanup` executes `debian/rules clean` from the working directory, i.e. it runs code from the package tree; it is not a pure file-removal step.
 - `lintian`.
 - `deb-chl-bumpup-*` (changelog bump).
 - `git-tag-sign/-verify`.
@@ -153,14 +158,14 @@ sudo cowbuilder --create \
 
 ## Extending: overrides (no forking the engine)
 
-- Drop an executable `./make-helper-overrides.bsh` or files in `./make-helper-overrides.d/` to add pre/post hooks or replace any target.
+- Drop an executable `./make-helper-overrides.bsh` or files in `./make-helper-overrides.d/` (also read from `./debian/`) to add pre/post hooks or replace any target. They are SOURCED into the engine shell -- arbitrary code from the package tree.
 - Non-executable override files are skipped.
 - Prefer this over editing the engine.
 
 ## Gotchas
 
-- Run from the package root; tarballs/build outputs are written to `../` (`dpkg-source` can't target another dir), but cowbuilder results go to `--buildresult` (the dist folder).
-- `deb-pkg` (cowbuilder) hard-fails if `dist`/`debdist`/`debdsc` weren't run -- the error tells you which tarball is missing.
+- Run from the package root. Tarballs/build outputs go to `$DISTDIR`: `..` by default, but reassigned to `make_cowbuilder_dist_folder` whenever `make_use_cowbuilder=true` (which is then also `--buildresult`). genmkfile hand-rolls `tar` precisely BECAUSE `dpkg-source` can only target `../`.
+- `deb-pkg` does NOT need `dist`/`debdist`/`debdsc` run first -- it runs them itself. The "did you run genmkfile dist" error belongs to `deb-pkg-build`, which is the build step on its own.
 - The dm apt-cacher (`127.0.0.1:9977`) is only up during a dm build session; when it's down, set `make_cowbuilder_mirror=https://deb.debian.org/debian`.
 
 ### cowbuilder `--execute`: passing variables into a chroot script
