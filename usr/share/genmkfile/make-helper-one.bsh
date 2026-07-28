@@ -1069,10 +1069,6 @@ make_uch() {
 make_distclean() {
   make_output_info "(internal) genmkfile distclean"
   make_function_run make_clean
-  ## Also drop debhelper residue (debian/.debhelper, *.substvars, staging dirs).
-  ## Without this, 'distclean' leaves a tree that 'genmkfile dist' then rejects
-  ## with "Empty directory found!".
-  make_function_run make_deb_clean
 }
 
 make_clean() {
