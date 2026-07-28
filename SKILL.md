@@ -27,6 +27,22 @@ genmkfile deb-pkg     # -> builds the .deb(s)
 - `genmkfile distclean` removes generated tarballs/build cruft.
 - Plain `genmkfile deb-pkg` with no cowbuilder uses `debuild` in-place (needs build-deps installed; `sudo genmkfile deb-all-dep` installs them).
 
+### In-place build (no chroot)
+
+- Applies to `Architecture: all`, file-only packages whose Build-Depends are just `debhelper`: they build identically without the chroot, so a missing cowbuilder base is not a blocker.
+- Per package, in dependency order, from the package root:
+
+```
+fakeroot debian/rules clean   # dh_clean; see the "Empty directory found!" gotcha
+genmkfile distclean
+make_use_lintian=false genmkfile dist && genmkfile debdist && genmkfile debdsc && genmkfile deb-pkg
+```
+
+- Artifacts land in `../`, not in a dist folder under the package root.
+- `make_use_lintian=false` is deliberate here -- see the `make_use_lintian` knob below; a lintian warning would otherwise fail the build after the `.deb` already exists.
+- If the pristine-tree check still fails on debhelper residue: `rm -rf debian/.debhelper debian/*.debhelper debian/*.substvars debian/files debian/debhelper-build-stamp` (plus `debian/<package-name>` for the staging dir).
+- cowbuilder never hits the residue problem -- it builds from the source tarball inside the chroot.
+
 ## cowbuilder mode (chroot build)
 
 - **In a derivative-maker checkout, do NOT hand-roll the cowbuilder invocation.**
